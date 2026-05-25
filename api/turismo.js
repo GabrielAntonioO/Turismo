@@ -1,5 +1,5 @@
 function haversine(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth radius in km
+  const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
@@ -13,17 +13,31 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Content-Type', 'application/json');
 
-  const { lat, lon, lugar } = req.query;
-  if (!lat || !lon) return res.status(400).json({ error: 'Faltan coordenadas' });
+  const { lat, lon, type } = req.query;
+  if (!lat || !lon || !type) return res.status(400).json({ error: 'Faltan parámetros' });
 
-  const prompt = `Eres un guía de turismo experto. La ubicación exacta del usuario es: lat=${lat}, lon=${lon} (${lugar || 'ubicación desconocida'}).
+  const latN = parseFloat(lat);
+  const lonN = parseFloat(lon);
 
-Dame una lista de exactamente 8 lugares de interés turístico para visitar cerca de esta ubicación.
-No incluyas restaurantes ni bares, solo lugares para visitar: monumentos, museos, parques, playas, miradores, edificios históricos, naturaleza, etc.
+  let tipoTexto = 'puntos de interés turístico';
+  let instrucciones = 'No incluyas restaurantes ni bares.';
+
+  if (type === 'comer') {
+    tipoTexto = 'restaurantes, cafés, bares y lugares para comer';
+    instrucciones = 'Incluye todo tipo de establecimientos para comer y beber: restaurantes, cafés, bares, pizzerías, taquerías, etc.';
+  } else if (type === 'gasolineras') {
+    tipoTexto = 'gasolineras y estaciones de servicio';
+    instrucciones = 'Solo gasolineras tradicionales con surtidor de combustible.';
+  }
+
+  const prompt = `Eres un guía de turismo experto. La ubicación exacta del usuario es: lat=${latN}, lon=${lonN}.
+
+Dame una lista de exactamente 8 ${tipoTexto} cerca de esta ubicación.
+${instrucciones}
 
 Para cada lugar:
 - Proporciona las coordenadas GPS reales y precisas del lugar
-- Calcula la distancia en km usando la fórmula de Haversine desde lat=${lat}, lon=${lon} hasta las coordenadas del lugar
+- Calcula la distancia en km usando la fórmula de Haversine desde lat=${latN}, lon=${lonN} hasta las coordenadas del lugar
 - Ordena la lista de menor a mayor distancia real calculada
 
 Responde SOLO con un array JSON válido, sin texto adicional, sin markdown, sin explicaciones:
@@ -74,7 +88,7 @@ Responde SOLO con un array JSON válido, sin texto adicional, sin markdown, sin 
     // Recalculate distances using real coordinates
     const lugaresConDistancia = lugares.map(l => ({
       ...l,
-      distancia_km: parseFloat(haversine(parseFloat(lat), parseFloat(lon), l.lat, l.lon))
+      distancia_km: parseFloat(haversine(latN, lonN, l.lat, l.lon))
     }));
     
     // Re-sort by actual distance
