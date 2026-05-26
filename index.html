@@ -55,6 +55,10 @@
       padding: 20px 16px 80px;
     }
 
+    #estado-inicio {
+      display: none;
+    }
+
     .btn-categoria {
       padding: 24px;
       background: var(--bg2);
@@ -204,6 +208,7 @@
 </header>
 
 <div id="pantalla-inicio">
+  <div id="estado-inicio" style="color:#555566; font-size:13px; letter-spacing:0.08em; text-align:center; padding:20px; display:flex; align-items:center; justify-content:center; gap:8px;"><span class="spinner"></span> OBTENIENDO UBICACIÓN…</div>
   <button class="btn-categoria" onclick="cargarLugares('interes')">📍 Puntos de interés</button>
   <button class="btn-categoria" onclick="cargarLugares('comer')">🍽️ Para comer</button>
   <button class="btn-categoria" onclick="cargarLugares('gasolineras')">⛽ Gasolineras</button>
@@ -347,8 +352,8 @@
       setError('No se pudo obtener la ubicación. Abre primero la página GPS.');
       return;
     }
-    setEstado('');
     await updateUbicacion(ubicacionActual.lat, ubicacionActual.lon);
+    document.getElementById('estado-inicio').style.display = 'none';
   }
 
   init();
