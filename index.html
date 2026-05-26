@@ -330,7 +330,7 @@
       div.style.animationDelay = `${i * 0.08}s`;
       div.innerHTML = `
         <div class="lugar-num">${String(i+1).padStart(2,'0')}</div>
-        <div class="lugar-nombre">${l.nombre}</div>
+        <div class="lugar-nombre">${l.nombre}${l.ciudad ? ' (' + l.ciudad + ')' : ''}</div>
         <div class="lugar-desc">${l.descripcion}</div>
         <div class="lugar-dist">~ ${l.distancia_km} km</div>
         <a class="maps-btn" href="${mapsUrl}" target="_blank">→ Cómo llegar</a>
