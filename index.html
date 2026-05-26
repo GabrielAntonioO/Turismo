@@ -40,6 +40,7 @@
       font-weight: 700;
       color: #ffffff;
       letter-spacing: 0.03em;
+      text-transform: uppercase;
     }
 
     #pantalla-inicio {
@@ -258,16 +259,28 @@
     return null;
   }
 
+  async function getReverseGeocode(lat, lon) {
+    try {
+      const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=es`);
+      if (!r.ok) throw new Error();
+      const data = await r.json();
+      const a = data.address;
+      return a.city || a.town || a.county || a.municipality || 'Ubicación desconocida';
+    } catch {
+      return 'Ubicación desconocida';
+    }
+  }
+
   async function getLocation() {
     const gps = await getLocationFromGPS();
     if (gps) return gps;
     return await getLocationFromJsonBin();
   }
 
-  function updateUbicacion(ciudad) {
-    if (ciudad) {
-      document.querySelector('header #ubicacion').textContent = '📍 ' + ciudad.toUpperCase();
-    }
+  async function updateUbicacion(lat, lon) {
+    const ciudad = await getReverseGeocode(lat, lon);
+    ubicacionActual.ciudad = ciudad;
+    document.querySelector('header #ubicacion').textContent = '📍 ' + ciudad.toUpperCase();
   }
 
   async function cargarLugares(tipo) {
@@ -291,10 +304,6 @@
       if (!Array.isArray(lugares) || lugares.length === 0) {
         setError('No se encontraron resultados.');
         return;
-      }
-
-      if (lugares[0].ciudad) {
-        updateUbicacion(lugares[0].ciudad);
       }
 
       setEstado('');
@@ -339,7 +348,7 @@
       return;
     }
     setEstado('');
-    updateUbicacion(ubicacionActual.ciudad);
+    await updateUbicacion(ubicacionActual.lat, ubicacionActual.lon);
   }
 
   init();
