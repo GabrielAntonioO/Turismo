@@ -81,7 +81,7 @@
 <body>
     <div class="container">
         <h1>🔍 Prueba de Fotos - Wikipedia</h1>
-        <p style="color: #888;">Wikipedia NO necesita API key, así que debería funcionar siempre</p>
+        <p style="color: #888;">Wikipedia NO necesita API key, debería funcionar siempre</p>
         
         <div class="input-group">
             <input type="text" id="searchInput" placeholder="Ej: Sagrada Familia" value="Madrid">
@@ -134,7 +134,7 @@
                     let html = `<h2>✅ Fotos encontradas (${data.fotos.length})</h2>`;
                     html += `<div class="fotos-grid">`;
                     
-                    data.fotos.forEach(foto => {
+                    data.fotos.slice(0, 3).forEach(foto => {
                         html += `
                             <div>
                                 <img src="${foto.url}" alt="${foto.title}" onerror="this.style.display='none'">
@@ -174,7 +174,6 @@
             }
         }
 
-        // Probar al cargar
         window.onload = probarWikipedia;
     </script>
 </body>
