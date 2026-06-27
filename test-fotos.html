@@ -13,9 +13,9 @@
         }
         .container {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr;
             gap: 20px;
-            max-width: 1200px;
+            max-width: 800px;
             margin: 0 auto;
         }
         .api-card {
@@ -51,6 +51,11 @@
             text-align: center;
             padding: 20px;
         }
+        .success {
+            color: #6bff6b;
+            text-align: center;
+            padding: 20px;
+        }
         .input-group {
             display: flex;
             gap: 10px;
@@ -77,6 +82,22 @@
         .input-group button:hover {
             background: #5aa0e0;
         }
+        .resultado-final {
+            background: #1a1a2e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .badge-success { background: #2d6b2d; color: #6bff6b; }
+        .badge-error { background: #6b2d2d; color: #ff6b6b; }
+        .badge-warning { background: #6b5a2d; color: #ffd76b; }
     </style>
 </head>
 <body>
@@ -87,113 +108,74 @@
         <button onclick="probarTodas()">🔍 Probar todas</button>
     </div>
 
-    <div class="container">
-        <!-- Unsplash -->
-        <div class="api-card">
-            <h2>📸 Unsplash</h2>
-            <div id="unsplash-result" class="loading">Cargando...</div>
-        </div>
-
-        <!-- Pexels -->
-        <div class="api-card">
-            <h2>📸 Pexels</h2>
-            <div id="pexels-result" class="loading">Cargando...</div>
-        </div>
-
-        <!-- Wikipedia -->
-        <div class="api-card">
-            <h2>📸 Wikipedia</h2>
-            <div id="wikipedia-result" class="loading">Cargando...</div>
-        </div>
-    </div>
-
-    <div style="margin-top: 40px; padding: 20px; background: #1a1a2e; border-radius: 10px;">
-        <h3>📊 Resultado de la prueba</h3>
-        <div id="resultado-final" style="color: #aaa;"></div>
+    <div class="container" id="resultados">
+        <!-- Los resultados se mostrarán aquí -->
     </div>
 
     <script>
         async function probarTodas() {
             const query = document.getElementById('searchInput').value;
+            const container = document.getElementById('resultados');
             
-            // Limpiar resultados anteriores
-            document.getElementById('unsplash-result').innerHTML = '<div class="loading">⏳ Buscando en Unsplash...</div>';
-            document.getElementById('pexels-result').innerHTML = '<div class="loading">⏳ Buscando en Pexels...</div>';
-            document.getElementById('wikipedia-result').innerHTML = '<div class="loading">⏳ Buscando en Wikipedia...</div>';
-            document.getElementById('resultado-final').innerHTML = '';
-
-            // Probar Unsplash
-            try {
-                const response = await fetch(`/api/unsplash?query=${encodeURIComponent(query)}`);
-                const data = await response.json();
-                const fotos = data.fotos || [];
-                renderFotos('unsplash-result', fotos, 'Unsplash');
-            } catch (error) {
-                document.getElementById('unsplash-result').innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
-            }
-
-            // Probar Pexels
-            try {
-                const response = await fetch(`/api/pexels?query=${encodeURIComponent(query)}`);
-                const data = await response.json();
-                const fotos = data.fotos || [];
-                renderFotos('pexels-result', fotos, 'Pexels');
-            } catch (error) {
-                document.getElementById('pexels-result').innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
-            }
-
-            // Probar Wikipedia
-            try {
-                const response = await fetch(`/api/wikipedia?query=${encodeURIComponent(query)}`);
-                const data = await response.json();
-                const fotos = data.fotos || [];
-                renderFotos('wikipedia-result', fotos, 'Wikipedia');
-            } catch (error) {
-                document.getElementById('wikipedia-result').innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
-            }
-
-            // Resumen final
-            const resultados = {
-                unsplash: document.querySelector('#unsplash-result img') ? '✅ Tiene fotos' : '❌ Sin fotos',
-                pexels: document.querySelector('#pexels-result img') ? '✅ Tiene fotos' : '❌ Sin fotos',
-                wikipedia: document.querySelector('#wikipedia-result img') ? '✅ Tiene fotos' : '❌ Sin fotos'
-            };
-
-            document.getElementById('resultado-final').innerHTML = `
-                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
-                    <div>Unsplash: ${resultados.unsplash}</div>
-                    <div>Pexels: ${resultados.pexels}</div>
-                    <div>Wikipedia: ${resultados.wikipedia}</div>
-                </div>
-                <div style="margin-top: 10px; color: #4a90d0;">
-                    💡 ${Object.values(resultados).filter(r => r.includes('✅')).length} de 3 APIs tienen fotos para "${query}"
+            container.innerHTML = `
+                <div class="api-card">
+                    <h2>⏳ Probando...</h2>
+                    <div class="loading">Buscando fotos para "${query}"</div>
                 </div>
             `;
-        }
 
-        function renderFotos(containerId, fotos, apiName) {
-            const container = document.getElementById(containerId);
-            
-            if (!fotos || fotos.length === 0) {
-                container.innerHTML = `<div class="error">📷 No se encontraron fotos en ${apiName}</div>`;
-                return;
-            }
-
-            let html = '<div class="fotos-grid">';
-            fotos.slice(0, 3).forEach(foto => {
-                const url = foto.urls?.small || foto.url || foto.urls?.medium || foto.src?.small;
-                const autor = foto.photographer?.name || foto.user?.name || foto.photographer || 'Autor desconocido';
-                html += `
-                    <div>
-                        <img src="${url}" alt="${foto.alt || query}" onerror="this.style.display='none'">
-                        <div style="font-size: 10px; color: #666; margin-top: 4px;">📸 ${autor}</div>
+            // Probar usando el endpoint combinado
+            try {
+                const response = await fetch(`/api/buscar-fotos?query=${encodeURIComponent(query)}`);
+                const data = await response.json();
+                
+                if (data.fotos && data.fotos.length > 0) {
+                    let html = `<div class="api-card">
+                        <h2>✅ Fotos encontradas en: ${data.fuente}</h2>
+                        <div style="color: #aaa; margin-bottom: 10px;">${data.total} fotos encontradas</div>
+                        <div class="fotos-grid">`;
+                    
+                    data.fotos.forEach(foto => {
+                        const url = foto.urls?.small || foto.url || foto.urls?.medium || foto.src?.small;
+                        const autor = foto.photographer?.name || foto.user?.name || foto.photographer || 'Autor desconocido';
+                        html += `
+                            <div>
+                                <img src="${url}" alt="${foto.alt || query}" onerror="this.style.display='none'">
+                                <div style="font-size: 10px; color: #666; margin-top: 4px;">📸 ${autor}</div>
+                            </div>
+                        `;
+                    });
+                    
+                    html += `</div></div>`;
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = `
+                        <div class="api-card">
+                            <h2>❌ No se encontraron fotos</h2>
+                            <div class="error">No hay fotos disponibles para "${query}" en ninguna API</div>
+                            <div style="margin-top: 10px; color: #888; font-size: 14px;">
+                                💡 Sugerencias:<br>
+                                - Prueba con un nombre más específico<br>
+                                - Prueba con "Madrid" en lugar de "Ciudad de Madrid"<br>
+                                - Asegúrate de que las API keys están configuradas en Vercel
+                            </div>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="api-card">
+                        <h2>❌ Error</h2>
+                        <div class="error">Error al buscar fotos: ${error.message}</div>
+                        <div style="margin-top: 10px; color: #888; font-size: 14px;">
+                            💡 Verifica que:<br>
+                            1. Los archivos api/unsplash.js, api/pexels.js y api/wikipedia.js existen<br>
+                            2. Las API keys están configuradas en Vercel<br>
+                            3. Has hecho deploy de los cambios
+                        </div>
                     </div>
                 `;
-            });
-            html += '</div>';
-            html += `<div style="color: #4a90d0; font-size: 12px; margin-top: 10px;">✅ ${fotos.length} fotos encontradas</div>`;
-            
-            container.innerHTML = html;
+            }
         }
 
         // Probar al cargar la página
