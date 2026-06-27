@@ -1,0 +1,65 @@
+# ============================================
+# 1. VARIABLES DE ENTORNO (¡MUY IMPORTANTE!)
+# ============================================
+# Estos archivos contienen tus claves API
+# NUNCA los subas a GitHub
+.env
+.env.local
+.env.*.local
+
+# ============================================
+# 2. DEPENDENCIAS DE NODE
+# ============================================
+# Si usas Node.js, no subas estos
+node_modules/
+package-lock.json
+yarn.lock
+
+# ============================================
+# 3. ARCHIVOS DE SISTEMA
+# ============================================
+# Archivos que crea tu ordenador automáticamente
+.DS_Store          # macOS
+Thumbs.db          # Windows
+desktop.ini        # Windows
+
+# ============================================
+# 4. ARCHIVOS DE IDE / EDITORES
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ============================================
+# 5. LOGS
+# ============================================
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ============================================
+# 6. ARCHIVOS TEMPORALES
+# ============================================
+*.tmp
+*.temp
+*.cache
+
+# ============================================
+# 7. CARPETAS DE COMPILACIÓN
+# ============================================
+dist/
+build/
+out/
+.next/
+
+# ============================================
+# 8. OTROS
+# ============================================
+*.zip
+*.rar
+*.tar.gz
+coverage/
+.nyc_output/
