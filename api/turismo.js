@@ -1,3 +1,4 @@
+// api/turismo.js
 function haversine(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -85,13 +86,11 @@ Responde SOLO con un array JSON válido, sin texto adicional, sin markdown, sin 
     const clean = text.replace(/```json|```/g, '').trim();
     const lugares = JSON.parse(clean);
     
-    // Recalculate distances using real coordinates
     const lugaresConDistancia = lugares.map(l => ({
       ...l,
       distancia_km: parseFloat(haversine(latN, lonN, l.lat, l.lon))
     }));
     
-    // Re-sort by actual distance
     lugaresConDistancia.sort((a, b) => a.distancia_km - b.distancia_km);
     
     return res.status(200).json(lugaresConDistancia);
