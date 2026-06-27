@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     const pageId = Object.keys(pages)[0];
     const images = pages[pageId].images || [];
     
-    // Filtrar solo imágenes (no archivos .svg, .ogg, etc.)
+    // Filtrar solo imágenes
     const imageFiles = images
       .filter(img => img.title.match(/\.(jpg|jpeg|png|gif)$/i))
       .slice(0, 5);
