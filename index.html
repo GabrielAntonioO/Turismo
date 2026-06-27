@@ -249,15 +249,6 @@
       font-family: -apple-system, sans-serif;
     }
 
-    .foto-credits a {
-      color: #4a90d0;
-      text-decoration: none;
-    }
-
-    .foto-credits a:hover {
-      text-decoration: underline;
-    }
-
     .foto-placeholder {
       grid-column: 1 / -1;
       padding: 20px;
@@ -269,7 +260,6 @@
       border: 1px dashed var(--border);
     }
 
-    /* Skeleton loader para las fotos */
     .foto-skeleton {
       width: 100%;
       height: 100%;
@@ -284,7 +274,6 @@
       100% { background-position: -200% 0; }
     }
 
-    /* Modal para ver foto en grande */
     .modal-foto {
       display: none;
       position: fixed;
@@ -326,7 +315,6 @@
       transform: scale(1.1);
     }
 
-    /* Responsive para móviles */
     @media (max-width: 600px) {
       .fotos-container {
         grid-template-columns: repeat(3, 1fr);
@@ -360,7 +348,6 @@
 
 <button class="btn-volver" id="btn-volver" onclick="volverAlInicio()" style="display:none;">← VOLVER</button>
 
-<!-- Modal para ver fotos en grande -->
 <div class="modal-foto" id="modalFoto" onclick="cerrarModal()">
   <span class="close">&times;</span>
   <img id="modalImg" src="" alt="Foto ampliada">
@@ -478,7 +465,6 @@
       div.className = 'lugar';
       div.style.animationDelay = `${i * 0.08}s`;
       
-      // ID único para el contenedor de fotos
       const fotosId = `fotos-${i}-${Date.now()}`;
       
       div.innerHTML = `
@@ -496,7 +482,6 @@
       
       lista.appendChild(div);
       
-      // Cargar fotos de Unsplash
       cargarFotos(l.nombre, fotosId);
     });
   }
@@ -506,7 +491,7 @@
     if (!container) return;
     
     try {
-      const response = await fetch(`/api/unsplash?query=${encodeURIComponent(query)}`);
+      const response = await fetch(`/api/buscar-fotos?query=${encodeURIComponent(query)}`);
       
       if (!response.ok) {
         throw new Error(`Error ${response.status}`);
@@ -520,14 +505,13 @@
         return;
       }
       
-      // Mostrar hasta 3 fotos
-      container.innerHTML = fotos.map(foto => `
-        <div class="foto-item" onclick="abrirModal('${foto.urls.regular}', '${foto.user.name}', '${foto.user.username}')">
-          <img src="${foto.urls.small}" 
-               alt="${foto.alt_description || query}" 
+      container.innerHTML = fotos.slice(0, 3).map(foto => `
+        <div class="foto-item" onclick="abrirModal('${foto.url}', 'Wikipedia')">
+          <img src="${foto.url}" 
+               alt="${foto.title || query}" 
                loading="lazy"
                onerror="this.parentElement.innerHTML='<div class=foto-placeholder>❌ Error</div>'">
-          <div class="foto-credits">📸 <a href="https://unsplash.com/@${foto.user.username}" target="_blank">${foto.user.name}</a></div>
+          <div class="foto-credits">📸 Wikipedia</div>
         </div>
       `).join('');
       
@@ -539,11 +523,11 @@
 
   // ========== FUNCIONES PARA EL MODAL ==========
 
-  function abrirModal(url, autor, username) {
+  function abrirModal(url, autor) {
     const modal = document.getElementById('modalFoto');
     const img = document.getElementById('modalImg');
     img.src = url;
-    img.alt = `Foto por ${autor}`;
+    img.alt = `Foto de ${autor}`;
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
   }
@@ -554,7 +538,6 @@
     document.body.style.overflow = 'auto';
   }
 
-  // Cerrar modal con tecla ESC
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
       cerrarModal();
