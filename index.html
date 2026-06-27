@@ -506,12 +506,12 @@
       }
       
       container.innerHTML = fotos.slice(0, 3).map(foto => `
-        <div class="foto-item" onclick="abrirModal('${foto.url}', 'Wikipedia')">
+        <div class="foto-item" onclick="abrirModal('${foto.url}', '${foto.title || query}')">
           <img src="${foto.url}" 
                alt="${foto.title || query}" 
                loading="lazy"
                onerror="this.parentElement.innerHTML='<div class=foto-placeholder>❌ Error</div>'">
-          <div class="foto-credits">📸 Wikipedia</div>
+          <div class="foto-credits">📸 ${data.fuente || 'Wikipedia'}</div>
         </div>
       `).join('');
       
