@@ -18,10 +18,8 @@ export default async function handler(req, res) {
       return res.status(200).json({ fotos: [] });
     }
 
-    // Tomar el primer resultado
     const pageTitle = searchData.query.search[0].title;
     
-    // Obtener las imágenes de la página
     const imagesUrl = `https://es.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(pageTitle)}&prop=images&format=json&origin=*`;
     const imagesResponse = await fetch(imagesUrl);
     const imagesData = await imagesResponse.json();
@@ -30,12 +28,10 @@ export default async function handler(req, res) {
     const pageId = Object.keys(pages)[0];
     const images = pages[pageId].images || [];
     
-    // Filtrar solo imágenes
     const imageFiles = images
       .filter(img => img.title.match(/\.(jpg|jpeg|png|gif)$/i))
       .slice(0, 5);
     
-    // Obtener URLs de las imágenes
     const fotos = [];
     for (const img of imageFiles) {
       const infoUrl = `https://es.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(img.title)}&prop=imageinfo&iiprop=url&format=json&origin=*`;
