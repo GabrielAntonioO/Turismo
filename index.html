@@ -199,133 +199,6 @@
       font-family: var(--font);
       font-size: 13px;
     }
-
-    /* ========== ESTILOS PARA LAS FOTOS ========== */
-
-    .fotos-container {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin: 12px 0 16px 0;
-    }
-
-    .foto-item {
-      position: relative;
-      border-radius: 6px;
-      overflow: hidden;
-      aspect-ratio: 1/1;
-      background: var(--bg2);
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: transform 0.2s;
-    }
-
-    .foto-item:hover {
-      transform: scale(1.02);
-    }
-
-    .foto-item img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      transition: transform 0.3s;
-    }
-
-    .foto-item img:hover {
-      transform: scale(1.05);
-    }
-
-    .foto-credits {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 4px 8px;
-      background: rgba(0, 0, 0, 0.75);
-      color: #aaa;
-      font-size: 8px;
-      letter-spacing: 0.05em;
-      text-align: right;
-      font-family: -apple-system, sans-serif;
-    }
-
-    .foto-placeholder {
-      grid-column: 1 / -1;
-      padding: 20px;
-      text-align: center;
-      color: #555566;
-      font-size: 13px;
-      background: var(--bg2);
-      border-radius: 6px;
-      border: 1px dashed var(--border);
-    }
-
-    .foto-skeleton {
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, var(--bg2) 25%, var(--border) 50%, var(--bg2) 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: 6px;
-    }
-
-    @keyframes shimmer {
-      0% { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-
-    .modal-foto {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.92);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .modal-foto.active {
-      display: flex;
-    }
-
-    .modal-foto img {
-      max-width: 90%;
-      max-height: 90%;
-      object-fit: contain;
-      border-radius: 8px;
-    }
-
-    .modal-foto .close {
-      position: absolute;
-      top: 20px;
-      right: 30px;
-      color: #fff;
-      font-size: 40px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .modal-foto .close:hover {
-      color: #4a90d0;
-      transform: scale(1.1);
-    }
-
-    @media (max-width: 600px) {
-      .fotos-container {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 6px;
-      }
-      
-      .modal-foto img {
-        max-width: 95%;
-        max-height: 80%;
-      }
-    }
   </style>
 </head>
 <body>
@@ -347,11 +220,6 @@
 </div>
 
 <button class="btn-volver" id="btn-volver" onclick="volverAlInicio()" style="display:none;">← VOLVER</button>
-
-<div class="modal-foto" id="modalFoto" onclick="cerrarModal()">
-  <span class="close">&times;</span>
-  <img id="modalImg" src="" alt="Foto ampliada">
-</div>
 
 <script>
   const JSONBIN_API_KEY = '$2a$10$AjMK/XksYd.Fw0phfT.B4ud0nuC1nyjt0ZBo52sJk/wnCU75zuC76';
@@ -451,100 +319,25 @@
     }
   }
 
-  // ========== FUNCIONES PARA LAS FOTOS ==========
-
   function renderLugares(lugares) {
     const lista = document.getElementById('lista');
     lista.innerHTML = '';
-    
     lugares.forEach((l, i) => {
       const destino = encodeURIComponent(l.nombre + (l.ciudad ? ', ' + l.ciudad : ''));
       const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${destino}`;
-      
       const div = document.createElement('div');
       div.className = 'lugar';
       div.style.animationDelay = `${i * 0.08}s`;
-      
-      const fotosId = `fotos-${i}-${Date.now()}`;
-      
       div.innerHTML = `
         <div class="lugar-num">${String(i+1).padStart(2,'0')}</div>
         <div class="lugar-nombre">${l.nombre}${l.ciudad ? ' (' + l.ciudad + ')' : ''}</div>
-        <div class="fotos-container" id="${fotosId}">
-          <div class="foto-skeleton"></div>
-          <div class="foto-skeleton"></div>
-          <div class="foto-skeleton"></div>
-        </div>
         <div class="lugar-desc">${l.descripcion}</div>
         <div class="lugar-dist">~ ${l.distancia_km} km</div>
         <a class="maps-btn" href="${mapsUrl}" target="_blank">→ Cómo llegar</a>
       `;
-      
       lista.appendChild(div);
-      
-      cargarFotos(l.nombre, fotosId);
     });
   }
-
-  async function cargarFotos(query, containerId) {
-    const container = document.getElementById(containerId);
-    if (!container) return;
-    
-    try {
-      const response = await fetch(`/api/buscar-fotos?query=${encodeURIComponent(query)}`);
-      
-      if (!response.ok) {
-        throw new Error(`Error ${response.status}`);
-      }
-      
-      const data = await response.json();
-      const fotos = data.fotos || [];
-      
-      if (fotos.length === 0) {
-        container.innerHTML = `<div class="foto-placeholder">📷 Sin imágenes disponibles</div>`;
-        return;
-      }
-      
-      container.innerHTML = fotos.slice(0, 3).map(foto => `
-        <div class="foto-item" onclick="abrirModal('${foto.url}', '${foto.title || query}')">
-          <img src="${foto.url}" 
-               alt="${foto.title || query}" 
-               loading="lazy"
-               onerror="this.parentElement.innerHTML='<div class=foto-placeholder>❌ Error</div>'">
-          <div class="foto-credits">📸 ${data.fuente || 'Wikipedia'}</div>
-        </div>
-      `).join('');
-      
-    } catch (error) {
-      console.error('Error cargando fotos:', error);
-      container.innerHTML = `<div class="foto-placeholder">❌ Error al cargar imágenes</div>`;
-    }
-  }
-
-  // ========== FUNCIONES PARA EL MODAL ==========
-
-  function abrirModal(url, autor) {
-    const modal = document.getElementById('modalFoto');
-    const img = document.getElementById('modalImg');
-    img.src = url;
-    img.alt = `Foto de ${autor}`;
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
-  }
-
-  function cerrarModal() {
-    const modal = document.getElementById('modalFoto');
-    modal.classList.remove('active');
-    document.body.style.overflow = 'auto';
-  }
-
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-      cerrarModal();
-    }
-  });
-
-  // ========== FUNCIONES DE NAVEGACIÓN ==========
 
   function volverAlInicio() {
     document.getElementById('pantalla-inicio').style.display = 'flex';
