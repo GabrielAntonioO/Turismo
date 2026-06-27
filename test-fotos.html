@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prueba de Fotos</title>
+    <title>Prueba de Fotos - Wikipedia</title>
     <style>
         body { 
             background: #0d0d0d; 
@@ -12,21 +12,15 @@
             padding: 20px;
         }
         .container {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
             max-width: 800px;
             margin: 0 auto;
         }
-        .api-card {
+        .card {
             background: #1a1a2e;
             border-radius: 10px;
             padding: 20px;
             border: 1px solid #333;
-        }
-        .api-card h2 {
-            color: #4a90d0;
-            margin-top: 0;
+            margin-bottom: 20px;
         }
         .fotos-grid {
             display: grid;
@@ -41,21 +35,9 @@
             border-radius: 6px;
             border: 1px solid #333;
         }
-        .loading {
-            color: #888;
-            text-align: center;
-            padding: 20px;
-        }
-        .error {
-            color: #ff6b6b;
-            text-align: center;
-            padding: 20px;
-        }
-        .success {
-            color: #6bff6b;
-            text-align: center;
-            padding: 20px;
-        }
+        .loading { color: #888; text-align: center; padding: 20px; }
+        .error { color: #ff6b6b; text-align: center; padding: 20px; }
+        .success { color: #6bff6b; text-align: center; padding: 20px; }
         .input-group {
             display: flex;
             gap: 10px;
@@ -79,107 +61,121 @@
             font-weight: bold;
             cursor: pointer;
         }
-        .input-group button:hover {
-            background: #5aa0e0;
-        }
-        .resultado-final {
-            background: #1a1a2e;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
+        .input-group button:hover { background: #5aa0e0; }
+        .log {
+            background: #0d0d0d;
+            padding: 10px;
+            border-radius: 6px;
+            font-family: monospace;
             font-size: 12px;
-            font-weight: bold;
+            color: #888;
+            max-height: 200px;
+            overflow: auto;
+            margin-top: 10px;
         }
-        .badge-success { background: #2d6b2d; color: #6bff6b; }
-        .badge-error { background: #6b2d2d; color: #ff6b6b; }
-        .badge-warning { background: #6b5a2d; color: #ffd76b; }
+        .log .ok { color: #6bff6b; }
+        .log .error { color: #ff6b6b; }
+        .log .info { color: #4a90d0; }
     </style>
 </head>
 <body>
-    <h1>🔍 Prueba de APIs de Fotos</h1>
-    
-    <div class="input-group">
-        <input type="text" id="searchInput" placeholder="Ej: Sagrada Familia Barcelona" value="Sagrada Familia Barcelona">
-        <button onclick="probarTodas()">🔍 Probar todas</button>
-    </div>
+    <div class="container">
+        <h1>🔍 Prueba de Fotos - Wikipedia</h1>
+        <p style="color: #888;">Wikipedia NO necesita API key, así que debería funcionar siempre</p>
+        
+        <div class="input-group">
+            <input type="text" id="searchInput" placeholder="Ej: Sagrada Familia" value="Madrid">
+            <button onclick="probarWikipedia()">🔍 Buscar</button>
+        </div>
 
-    <div class="container" id="resultados">
-        <!-- Los resultados se mostrarán aquí -->
+        <div id="resultado" class="card">
+            <h2>⏳ Esperando búsqueda...</h2>
+            <div class="loading">Escribe un lugar y haz clic en Buscar</div>
+        </div>
+
+        <div id="log" class="log">
+            <div class="info">📋 Log de la prueba</div>
+        </div>
     </div>
 
     <script>
-        async function probarTodas() {
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            log.innerHTML += `<div class="${type}">[${timestamp}] ${message}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        async function probarWikipedia() {
             const query = document.getElementById('searchInput').value;
-            const container = document.getElementById('resultados');
+            const resultado = document.getElementById('resultado');
             
-            container.innerHTML = `
-                <div class="api-card">
-                    <h2>⏳ Probando...</h2>
-                    <div class="loading">Buscando fotos para "${query}"</div>
-                </div>
+            addLog(`🔍 Buscando: "${query}"`, 'info');
+            
+            resultado.innerHTML = `
+                <h2>⏳ Buscando...</h2>
+                <div class="loading">Buscando fotos para "${query}" en Wikipedia</div>
             `;
 
-            // Probar usando el endpoint combinado
             try {
-                const response = await fetch(`/api/buscar-fotos?query=${encodeURIComponent(query)}`);
+                addLog(`📡 Llamando a /api/wikipedia?query=${encodeURIComponent(query)}`, 'info');
+                
+                const response = await fetch(`/api/wikipedia?query=${encodeURIComponent(query)}`);
+                addLog(`📊 Respuesta: ${response.status} ${response.statusText}`, 'info');
+                
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                
                 const data = await response.json();
+                addLog(`📦 Datos recibidos: ${data.fotos?.length || 0} fotos`, 'info');
                 
                 if (data.fotos && data.fotos.length > 0) {
-                    let html = `<div class="api-card">
-                        <h2>✅ Fotos encontradas en: ${data.fuente}</h2>
-                        <div style="color: #aaa; margin-bottom: 10px;">${data.total} fotos encontradas</div>
-                        <div class="fotos-grid">`;
+                    let html = `<h2>✅ Fotos encontradas (${data.fotos.length})</h2>`;
+                    html += `<div class="fotos-grid">`;
                     
                     data.fotos.forEach(foto => {
-                        const url = foto.urls?.small || foto.url || foto.urls?.medium || foto.src?.small;
-                        const autor = foto.photographer?.name || foto.user?.name || foto.photographer || 'Autor desconocido';
                         html += `
                             <div>
-                                <img src="${url}" alt="${foto.alt || query}" onerror="this.style.display='none'">
-                                <div style="font-size: 10px; color: #666; margin-top: 4px;">📸 ${autor}</div>
+                                <img src="${foto.url}" alt="${foto.title}" onerror="this.style.display='none'">
+                                <div style="font-size: 10px; color: #666; margin-top: 4px;">📸 ${foto.title}</div>
                             </div>
                         `;
                     });
                     
-                    html += `</div></div>`;
-                    container.innerHTML = html;
+                    html += `</div>`;
+                    resultado.innerHTML = html;
+                    addLog(`✅ Éxito: ${data.fotos.length} fotos encontradas`, 'ok');
                 } else {
-                    container.innerHTML = `
-                        <div class="api-card">
-                            <h2>❌ No se encontraron fotos</h2>
-                            <div class="error">No hay fotos disponibles para "${query}" en ninguna API</div>
-                            <div style="margin-top: 10px; color: #888; font-size: 14px;">
-                                💡 Sugerencias:<br>
-                                - Prueba con un nombre más específico<br>
-                                - Prueba con "Madrid" en lugar de "Ciudad de Madrid"<br>
-                                - Asegúrate de que las API keys están configuradas en Vercel
-                            </div>
+                    resultado.innerHTML = `
+                        <h2>❌ No se encontraron fotos</h2>
+                        <div class="error">No hay fotos disponibles para "${query}" en Wikipedia</div>
+                        <div style="margin-top: 10px; color: #888;">
+                            💡 Sugerencias:<br>
+                            - Prueba con nombres más específicos: "Sagrada Familia Barcelona"<br>
+                            - Prueba con ciudades: "Madrid", "Barcelona", "Sevilla"<br>
+                            - Prueba con monumentos: "Alhambra", "Catedral", "Puerta del Sol"
                         </div>
                     `;
+                    addLog(`❌ No se encontraron fotos para "${query}"`, 'error');
                 }
             } catch (error) {
-                container.innerHTML = `
-                    <div class="api-card">
-                        <h2>❌ Error</h2>
-                        <div class="error">Error al buscar fotos: ${error.message}</div>
-                        <div style="margin-top: 10px; color: #888; font-size: 14px;">
-                            💡 Verifica que:<br>
-                            1. Los archivos api/unsplash.js, api/pexels.js y api/wikipedia.js existen<br>
-                            2. Las API keys están configuradas en Vercel<br>
-                            3. Has hecho deploy de los cambios
-                        </div>
+                addLog(`❌ Error: ${error.message}`, 'error');
+                resultado.innerHTML = `
+                    <h2>❌ Error</h2>
+                    <div class="error">Error: ${error.message}</div>
+                    <div style="margin-top: 10px; color: #888;">
+                        💡 Posibles causas:<br>
+                        1. El archivo api/wikipedia.js no existe<br>
+                        2. Error en el código de Wikipedia<br>
+                        3. Problema de conexión a Wikipedia
                     </div>
                 `;
             }
         }
 
-        // Probar al cargar la página
-        window.onload = probarTodas;
+        // Probar al cargar
+        window.onload = probarWikipedia;
     </script>
 </body>
 </html>
